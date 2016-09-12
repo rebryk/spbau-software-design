@@ -16,8 +16,7 @@ fun test_cat(shell: Command): Boolean {
 
 fun test_echo(shell: Command): Boolean {
     try {
-        shell.execute("echo 'test message'")
-        return true
+        return shell.execute("echo 'test message'").compareTo("test message") == 0;
     } catch(e: Exception) {
         println(String.format("Error: unexpected exception \'%s!\'", e.toString()))
         return false

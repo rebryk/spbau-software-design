@@ -4,7 +4,6 @@
 
 class Echo : Command {
     override fun execute(input: String): String {
-        println(unwrap(input))
-        return ""
+        return unwrap(input)
     }
 }

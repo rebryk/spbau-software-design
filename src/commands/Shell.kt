@@ -14,7 +14,7 @@ class Shell : Command{
             return input
         }
 
-        val args = splitBy(input, ' ').filter { it.isNotEmpty() }.map { substitute(it, variables) }
+        val args = splitBy(input, ' ').filter { it.isNotEmpty() }
         if (args.size > 2 && args[1].compareTo("=") == 0) {
             val value = args.subList(2, args.size).joinToString(" ")
             variables["$" + args[0]] = unwrap(processStrings(value, variables))
