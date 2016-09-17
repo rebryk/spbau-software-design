@@ -1,2 +1,4 @@
-# -SPbAU-Software-Design
-SPbAU Software Design course (Term 5)
+# SPbAU-Software-Design
+
+В качестве библиотеки для парсинга аргументов, была выбрана библиотека [Kotlin CLI](https://github.com/leprosus/kotlin-cli), поскольку она написана на языке Kotlin специально для языка Kotlin.
+Она просто в использовании и полностью удовлетворяет текущим требованиям. 
