@@ -1,3 +1,5 @@
+import java.util.*
+
 /**
  * Created by rebryk on 9/10/16.
  */
@@ -47,8 +49,8 @@ fun processStrings(input: String, variables: MutableMap<String, String>): String
     return builder.toString()
 }
 
-fun splitBy(input: String, ch: Char): List<String> {
-    val result = mutableListOf<String>()
+fun splitBy(input: String, ch: Char): ArrayList<String> {
+    val result = ArrayList<String>()
     var i = 0
     var l = 0
 

@@ -8,10 +8,10 @@ import java.nio.file.Paths
 class Cat : Command {
     override fun execute(input: String): String {
         if (!Files.exists(Paths.get(input))) {
-            println(String.format("Error: no such file \'%s\'!", input));
-            return "";
+            println(String.format("Error: no such file \'%s\'!", input))
+            return ""
         }
 
-        return String(Files.readAllBytes(Paths.get(input)));
+        return String(Files.readAllBytes(Paths.get(input)))
     }
 }

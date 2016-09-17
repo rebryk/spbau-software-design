@@ -8,6 +8,7 @@ fun main(args: Array<String>) {
     shell.registerCommand("pwd", Pwd())
     shell.registerCommand("wc", Wc())
     shell.registerCommand("cat", Cat())
+    shell.registerCommand("grep", Grep())
 
     do {
         val line = readLine()
