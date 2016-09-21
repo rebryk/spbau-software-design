@@ -1,9 +1,15 @@
+package ru.spbau.mit.commands
+
+import ru.spbau.mit.*
 import java.util.*
 
 /**
  * Created by rebryk on 9/10/16.
  */
 
+/**
+ * Main command that executes terminal commands
+ */
 class Shell : Command{
     private val commands: MutableMap<String, Command> = HashMap()
     private val variables: MutableMap<String, String> = HashMap()
