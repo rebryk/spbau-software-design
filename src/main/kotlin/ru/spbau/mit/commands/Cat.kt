@@ -1,5 +1,6 @@
 package ru.spbau.mit.commands
 
+import ru.spbau.mit.Environment
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -11,12 +12,13 @@ import java.nio.file.Paths
  * Command prints content of input file
  */
 class Cat : Command {
-    override fun execute(input: String): String {
-        if (!Files.exists(Paths.get(input))) {
+    override fun execute(input: String, env: Environment): String {
+        val path = Paths.get(env.currentDirectory).resolve(input)
+        if (!Files.exists(path)) {
             println(String.format("Error: no such file \'%s\'!", input))
             return ""
         }
 
-        return String(Files.readAllBytes(Paths.get(input)))
+        return String(Files.readAllBytes(path))
     }
 }

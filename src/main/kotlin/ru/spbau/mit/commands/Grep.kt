@@ -3,6 +3,7 @@ package ru.spbau.mit.commands
 import org.apache.commons.cli.DefaultParser
 import org.apache.commons.cli.Options
 import org.apache.commons.cli.ParseException
+import ru.spbau.mit.Environment
 import ru.spbau.mit.splitBy
 import ru.spbau.mit.unwrap
 import java.nio.file.Files
@@ -61,7 +62,7 @@ class Grep : Command {
         return builder.toString()
     }
 
-    override fun execute(input: String): String {
+    override fun execute(input: String, env: Environment): String {
         val args = splitBy(input, ' ')
 
         val commandLine = try {
@@ -88,11 +89,13 @@ class Grep : Command {
             return ""
         }
 
-        if (!Files.exists(Paths.get(file))) {
+        val path = Paths.get(env.currentDirectory).resolve(file)
+        if (!Files.exists(path)) {
             println(String.format("Error: no such file \'%s\'!", file))
             return "";
         }
 
-        return grep(ignoreCase, wordRegexp, afterContext, pattern, Files.readAllLines(Paths.get(file)))
+        return grep(ignoreCase, wordRegexp, afterContext, pattern,
+                Files.readAllLines(path))
     }
 }
