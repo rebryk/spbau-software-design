@@ -10,7 +10,8 @@ import kotlin.test.assertEquals
  */
 
 class Test {
-    val shell = Shell()
+    private val shell = Shell()
+    private val env = Environment()
 
     @Before
     fun init() {
@@ -22,17 +23,18 @@ class Test {
 
     @Test
     fun testEcho() {
-        assertEquals("test message", shell.execute("echo 'test message'"))
+        assertEquals("test message", shell.execute("echo 'test message'", env))
     }
 
     @Test
     fun testCat() {
-        shell.execute("file = \'src/main/kotlin/ru/spbau/mit/main.kt\'")
-        assertEquals(shell.execute("cat \$file | wc"), shell.execute("cat src/main/kotlin/ru/spbau/mit/main.kt | wc"))
+        shell.execute("file = \'src/main/kotlin/ru/spbau/mit/main.kt\'", env)
+        assertEquals(shell.execute("cat \$file | wc", env),
+                shell.execute("cat src/main/kotlin/ru/spbau/mit/main.kt | wc", env))
     }
 
     @Test
     fun testGrep() {
-        assertEquals("1 1 34", shell.execute("grep modelVersion pom.xml | wc"))
+        assertEquals("1 1 34", shell.execute("grep modelVersion pom.xml | wc", env))
     }
 }

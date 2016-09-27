@@ -13,9 +13,9 @@ import java.util.*
 class Shell : Command{
     private val commands: MutableMap<String, Command> = HashMap()
     private val variables: MutableMap<String, String> = HashMap()
-    private val environment: Environment = Environment()
+    private val externalCommand: ExternalCommand = ExternalCommand()
 
-    private fun process(input: String) : String {
+    private fun process(input: String, env: Environment) : String {
         if (input.isEmpty()) {
             return input
         }
@@ -28,14 +28,14 @@ class Shell : Command{
         }
 
         if (commands[args[0]] == null) {
-            return environment.execute(args.joinToString(" "));
+            return externalCommand.execute(args.joinToString(" "), env);
         }
 
-        return commands[args[0]]!!.execute(args.subList(1, args.size).joinToString(" "))
+        return commands[args[0]]!!.execute(args.subList(1, args.size).joinToString(" "), env)
     }
 
-    override fun execute(input: String) : String {
-        return splitBy(input, '|').map { processStrings(it, variables) }.fold("", { a, b -> process(b + " " + a) })
+    override fun execute(input: String, env: Environment): String {
+        return splitBy(input, '|').map { processStrings(it, variables) }.fold("", { a, b -> process(b + " " + a, env) })
     }
 
     fun registerCommand(name: String, command: Command) {

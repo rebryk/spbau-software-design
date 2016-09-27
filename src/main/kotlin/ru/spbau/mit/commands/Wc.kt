@@ -1,5 +1,7 @@
 package ru.spbau.mit.commands
 
+import ru.spbau.mit.Environment
+
 /**
  * Created by rebryk on 9/7/16.
  */
@@ -8,7 +10,7 @@ package ru.spbau.mit.commands
  * Command counts number of lines, words, characters in the given string
  */
 class Wc : Command {
-    override fun execute(input: String): String {
+    override fun execute(input: String, env: Environment): String {
         var wordsCount = 0
         var linesCount = 0
 

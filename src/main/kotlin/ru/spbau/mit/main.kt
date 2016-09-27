@@ -16,7 +16,10 @@ fun main(args: Array<String>) {
     shell.registerCommand("wc", Wc())
     shell.registerCommand("cat", Cat())
     shell.registerCommand("grep", Grep())
+    shell.registerCommand("ls", Ls())
+    shell.registerCommand("cd", Cd())
 
+    val env = Environment()
     do {
         val line = readLine()
         if (line.orEmpty().compareTo("exit") == 0) {
@@ -24,7 +27,7 @@ fun main(args: Array<String>) {
         }
 
         try {
-            val result = shell.execute(line.orEmpty())
+            val result = shell.execute(line.orEmpty(), env)
             if (result.isNotEmpty()) {
                 println(result)
             }
