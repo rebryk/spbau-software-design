@@ -1,48 +1,7 @@
-# Shell
+# [Project idea](https://drive.google.com/drive/folders/0B43xBKz2nEwdY3p5dDBuSkJhWWc?usp=sharing)
 
-## Описание
-Есть интерфейс ```Command``` с единственным методом ```execute```. <br>
-Оставшиеся классы реализуют этот интерфейс. <br>
-Среди них есть основной класс ```Shell```, который и является интерпретатором. <br>
-Мы подаем ему на вход команду, а он ее выполняет.
+# Usecase diagram
+![Usecase diagram](/usecase.png)
 
-Так же есть набор вспомогающих функций, которые осуществляют парсинг команд.
-
-## Добавление новых команд
-Чтобы добавить новую команду в интерпретатор, нужно совершить 2 простых шага: 
-
-* Написать класс вашей команды ```NewCommand```, реализующий интерфейс ```Command```
-* Зарегистрировать команду в интерпретаторе: ```shell.registerCommand("new_command", NewCommand())```
-
-## UML Диаграмма
-![UML](/uml.png)
-
-## Примеры использования
-
-```
-> pwd
-/Users/rebryk/Google Drive/Studying/Term 5/Software Design/SPbAU-Software-Design
-```
-
-```
-> echo 'Hello, World!' | wc
-1 2 13
-```
-
-```
-> file = "src/main.kt"
-> cat $file
-  ...file data...
-```
-
-```
-> X = 1
-> Y = 2
-> echo "X = $X and Y = $Y"
-X = 1 and Y = 2
-```
-
-## Grep
-
-В качестве библиотеки для парсинга аргументов, была выбрана библиотека CommonsCLI.
-Она просто в использовании и полностью удовлетворяет текущим требованиям. 
+# Activity diagram
+![Activity diagram](/activity.png) 
