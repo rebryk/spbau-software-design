@@ -44,7 +44,7 @@ class Grep : Command {
 
         val regex = unwrap(pattern).toRegex(options)
 
-        var l = 0;
+        var l = 0
         while (l < lines.size) {
             if (match(lines[l], regex, w)) {
                 lines.subList(l, Math.min(l + A, lines.size)).forEach { builder.append(it).append('\n') }
@@ -91,7 +91,7 @@ class Grep : Command {
         val pathToFile = shell.getCurrentDir().resolve(file)
         if (!Files.exists(pathToFile)) {
             println(String.format("Error: no such file \'%s\'!", file))
-            return "";
+            return ""
         }
 
         return grep(ignoreCase, wordRegexp, afterContext, pattern, Files.readAllLines(pathToFile))

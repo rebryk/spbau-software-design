@@ -12,7 +12,7 @@ import java.nio.file.Paths
  */
 class Cat : Command {
     override fun execute(input: String, shell: Shell): String {
-        val pathToFile = shell.getCurrentDir().resolve(input);
+        val pathToFile = shell.getCurrentDir().resolve(input)
         if (!Files.exists(pathToFile)) {
             println(String.format("Error: no such file \'%s\'!", input))
             return ""

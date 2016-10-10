@@ -16,14 +16,14 @@ class Shell {
     private val commands: MutableMap<String, Command> = HashMap()
     private val variables: MutableMap<String, String> = HashMap()
     private val environment: Environment = Environment()
-    private var currentDirectory: Path = Paths.get("");
+    private var currentDirectory: Path = Paths.get("")
 
     fun setCurrentDir(newCurrentDirectory: Path) {
-        currentDirectory = newCurrentDirectory;
+        currentDirectory = newCurrentDirectory
     }
 
     fun getCurrentDir(): Path {
-        return currentDirectory;
+        return currentDirectory
     }
 
     private fun process(input: String) : String {

@@ -21,7 +21,7 @@ fun main(args: Array<String>) {
     do {
         val line = readLine()
         if (line.orEmpty().compareTo("exit") == 0) {
-            break;
+            break
         }
 
         try {

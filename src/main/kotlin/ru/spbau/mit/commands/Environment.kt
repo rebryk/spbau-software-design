@@ -18,6 +18,6 @@ class Environment : Command {
             println(String.format("Error: %s", e.toString()))
         }
 
-        return "";
+        return ""
     }
 }

@@ -15,7 +15,7 @@ class Wc : Command {
         input.split('\n').forEach { line ->
            ++linesCount
             wordsCount += line.split(' ').size
-        };
+        }
 
         return String.format("%d %d %d", linesCount, wordsCount, input.length)
     }
