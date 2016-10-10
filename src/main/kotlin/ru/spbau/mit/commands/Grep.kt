@@ -88,11 +88,12 @@ class Grep : Command {
             return ""
         }
 
-        if (!Files.exists(Paths.get(file))) {
+        val pathToFile = shell.getCurrentDir().resolve(file)
+        if (!Files.exists(pathToFile)) {
             println(String.format("Error: no such file \'%s\'!", file))
             return "";
         }
 
-        return grep(ignoreCase, wordRegexp, afterContext, pattern, Files.readAllLines(Paths.get(file)))
+        return grep(ignoreCase, wordRegexp, afterContext, pattern, Files.readAllLines(pathToFile))
     }
 }

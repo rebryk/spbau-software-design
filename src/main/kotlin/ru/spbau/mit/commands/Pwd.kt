@@ -9,6 +9,6 @@ package ru.spbau.mit.commands
  */
 class Pwd : Command {
     override fun execute(input: String, shell: Shell) : String {
-        return System.getProperty("user.dir")
+        return shell.getCurrentDir().toAbsolutePath().normalize().toString()
     }
 }

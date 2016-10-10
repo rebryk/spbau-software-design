@@ -12,11 +12,12 @@ import java.nio.file.Paths
  */
 class Cat : Command {
     override fun execute(input: String, shell: Shell): String {
-        if (!Files.exists(Paths.get(input))) {
+        val pathToFile = shell.getCurrentDir().resolve(input);
+        if (!Files.exists(pathToFile)) {
             println(String.format("Error: no such file \'%s\'!", input))
             return ""
         }
 
-        return String(Files.readAllBytes(Paths.get(input)))
+        return String(Files.readAllBytes(pathToFile))
     }
 }

@@ -16,6 +16,7 @@ fun main(args: Array<String>) {
     shell.registerCommand("wc", Wc())
     shell.registerCommand("cat", Cat())
     shell.registerCommand("grep", Grep())
+    shell.registerCommand("cd", Cd())
 
     do {
         val line = readLine()

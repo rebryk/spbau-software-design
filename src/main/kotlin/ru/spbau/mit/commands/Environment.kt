@@ -10,7 +10,7 @@ package ru.spbau.mit.commands
 class Environment : Command {
     override fun execute(input: String, shell: Shell): String {
         try {
-            val process = Runtime.getRuntime().exec(input)
+            val process = Runtime.getRuntime().exec(input, null, shell.getCurrentDir().toFile())
             if (process.waitFor() == 0) {
                 return process.inputStream.reader().readText()
             }
