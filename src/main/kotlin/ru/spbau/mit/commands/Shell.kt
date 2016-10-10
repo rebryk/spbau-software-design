@@ -10,7 +10,7 @@ import java.util.*
 /**
  * Main command that executes terminal commands
  */
-class Shell : Command{
+class Shell {
     private val commands: MutableMap<String, Command> = HashMap()
     private val variables: MutableMap<String, String> = HashMap()
     private val environment: Environment = Environment()
@@ -28,13 +28,13 @@ class Shell : Command{
         }
 
         if (commands[args[0]] == null) {
-            return environment.execute(args.joinToString(" "));
+            return environment.execute(args.joinToString(" "), this)
         }
 
-        return commands[args[0]]!!.execute(args.subList(1, args.size).joinToString(" "))
+        return commands[args[0]]!!.execute(args.subList(1, args.size).joinToString(" "), this)
     }
 
-    override fun execute(input: String) : String {
+    fun execute(input: String) : String {
         return splitBy(input, '|').map { processStrings(it, variables) }.fold("", { a, b -> process(b + " " + a) })
     }
 

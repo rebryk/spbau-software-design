@@ -61,7 +61,7 @@ class Grep : Command {
         return builder.toString()
     }
 
-    override fun execute(input: String): String {
+    override fun execute(input: String, shell: Shell): String {
         val args = splitBy(input, ' ')
 
         val commandLine = try {
