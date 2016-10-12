@@ -1,6 +1,8 @@
 package ru.spbau.mit.commands
 
 import ru.spbau.mit.*
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
 
 /**
@@ -10,10 +12,19 @@ import java.util.*
 /**
  * Main command that executes terminal commands
  */
-class Shell : Command{
+class Shell {
     private val commands: MutableMap<String, Command> = HashMap()
     private val variables: MutableMap<String, String> = HashMap()
     private val environment: Environment = Environment()
+    private var currentDirectory: Path = Paths.get("")
+
+    fun setCurrentDir(newCurrentDirectory: Path) {
+        currentDirectory = newCurrentDirectory
+    }
+
+    fun getCurrentDir(): Path {
+        return currentDirectory
+    }
 
     private fun process(input: String) : String {
         if (input.isEmpty()) {
@@ -28,13 +39,13 @@ class Shell : Command{
         }
 
         if (commands[args[0]] == null) {
-            return environment.execute(args.joinToString(" "));
+            return environment.execute(args.joinToString(" "), this)
         }
 
-        return commands[args[0]]!!.execute(args.subList(1, args.size).joinToString(" "))
+        return commands[args[0]]!!.execute(args.subList(1, args.size).joinToString(" "), this)
     }
 
-    override fun execute(input: String) : String {
+    fun execute(input: String) : String {
         return splitBy(input, '|').map { processStrings(it, variables) }.fold("", { a, b -> process(b + " " + a) })
     }
 

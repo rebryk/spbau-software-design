@@ -8,5 +8,5 @@ package ru.spbau.mit.commands
  * Command interface
  */
 interface Command {
-    fun execute(input: String) : String
+    fun execute(input: String, shell: Shell) : String
 }

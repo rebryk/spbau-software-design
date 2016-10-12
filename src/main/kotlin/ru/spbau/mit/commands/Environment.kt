@@ -8,9 +8,9 @@ package ru.spbau.mit.commands
  * Command executes input string in the system shell
  */
 class Environment : Command {
-    override fun execute(input: String): String {
+    override fun execute(input: String, shell: Shell): String {
         try {
-            val process = Runtime.getRuntime().exec(input)
+            val process = Runtime.getRuntime().exec(input, null, shell.getCurrentDir().toFile())
             if (process.waitFor() == 0) {
                 return process.inputStream.reader().readText()
             }
@@ -18,6 +18,6 @@ class Environment : Command {
             println(String.format("Error: %s", e.toString()))
         }
 
-        return "";
+        return ""
     }
 }

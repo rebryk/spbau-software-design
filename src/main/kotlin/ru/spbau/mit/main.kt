@@ -16,11 +16,13 @@ fun main(args: Array<String>) {
     shell.registerCommand("wc", Wc())
     shell.registerCommand("cat", Cat())
     shell.registerCommand("grep", Grep())
+    shell.registerCommand("cd", Cd())
+    shell.registerCommand("ls", Ls())
 
     do {
         val line = readLine()
         if (line.orEmpty().compareTo("exit") == 0) {
-            break;
+            break
         }
 
         try {

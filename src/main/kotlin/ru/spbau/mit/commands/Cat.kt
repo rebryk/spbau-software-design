@@ -11,12 +11,13 @@ import java.nio.file.Paths
  * Command prints content of input file
  */
 class Cat : Command {
-    override fun execute(input: String): String {
-        if (!Files.exists(Paths.get(input))) {
+    override fun execute(input: String, shell: Shell): String {
+        val pathToFile = shell.getCurrentDir().resolve(input)
+        if (!Files.exists(pathToFile)) {
             println(String.format("Error: no such file \'%s\'!", input))
             return ""
         }
 
-        return String(Files.readAllBytes(Paths.get(input)))
+        return String(Files.readAllBytes(pathToFile))
     }
 }
