@@ -1,8 +1,15 @@
 package ru.spbau.mit
 
+import org.apache.logging.log4j.LogManager
+import ru.spbau.mit.net.ClientImpl
+import ru.spbau.mit.messenger.Message
+import ru.spbau.mit.messenger.Messenger
+import ru.spbau.mit.net.ServerImpl
 import java.net.SocketAddress
 
-open class User {
+class User {
+    private val logger = LogManager.getLogger("User")
+
     private var name: String
     private val messenger: Messenger
 
@@ -14,18 +21,19 @@ open class User {
         this.messenger = messenger
 
         this.server = ServerImpl(messenger, port)
-        this.server.setOnConnectCallback { onUserConnectCallback() }
-        this.server.setOnDisconnectCallback { setUserDisconnectCallback()}
+        this.server.setOnConnected { onUserConnectCallback() }
+        this.server.setOnDisconnected { setUserDisconnectCallback()}
 
         this.client = ClientImpl(messenger)
-        this.client.setOnConnectCallback { onConnectCallback() }
-        this.client.setOnConnectFailedCallback { onConnectFailedCallback() }
-        this.client.setOnDisconnectCallback { onDisconnectCallback() }
+        this.client.setOnConnected { onConnectCallback() }
+        this.client.setOnConnectionFailed { onConnectFailedCallback() }
+        this.client.setOnDisconnected { onDisconnectCallback() }
     }
 
     fun setName(name: String) {
         this.name = name
-        messenger.showText("Your name has changed to %s".format(name))
+        messenger.sendSystemMessage("Your name has changed to %s".format(name))
+        logger.debug("User has changed name to %s".format(name))
     }
 
     fun sendMessage(text: String) {
@@ -61,28 +69,33 @@ open class User {
     }
 
     /**
-     * CALLBACKS
+     * Callbacks
      */
 
     private fun onUserConnectCallback() {
-        messenger.showText("User connected!")
+        messenger.sendSystemMessage("User connected!")
+        logger.debug("User connected!")
     }
 
     private fun setUserDisconnectCallback() {
-        messenger.showText("User disconnected!")
+        messenger.sendSystemMessage("User disconnected!")
+        logger.debug("User disconnected!")
     }
 
     private fun onConnectCallback() {
-        messenger.showText("You connected!")
+        messenger.sendSystemMessage("You connected!")
+        logger.debug("You connected!")
     }
 
     private fun onConnectFailedCallback() {
-        messenger.showText("Failed to connect!")
+        messenger.sendSystemMessage("Failed to connect!")
+        logger.debug("Failed to connect!")
         server.start()
     }
 
     private fun onDisconnectCallback() {
-        messenger.showText("You disconnected!")
+        messenger.sendSystemMessage("You disconnected!")
+        logger.debug("You disconnected!")
         server.start()
     }
 }

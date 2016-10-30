@@ -1,5 +1,8 @@
 package ru.spbau.mit
 
+import ru.spbau.mit.messenger.Message
+import ru.spbau.mit.messenger.Messenger
+import ru.spbau.mit.messenger.MessengerImpl
 import java.awt.*
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
@@ -7,9 +10,12 @@ import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.UnknownHostException
 import javax.swing.*
+import javax.swing.text.SimpleAttributeSet
+import javax.swing.text.StyleConstants
 
 class ChatGUI {
     private val user: User
+    private val messenger: Messenger
 
     private val frame: JFrame
     private val name        = JTextField(10)
@@ -17,12 +23,81 @@ class ChatGUI {
     private var messageText = JTextArea()
     private var chatArea    = JTextPane()
 
+    private val nameStyle = SimpleAttributeSet()
+    private val textStyle = SimpleAttributeSet()
+    private val infoStyle = SimpleAttributeSet()
+
     constructor(port: Int = 0) {
-        user = User("Unknown", MessengerImpl(chatArea), port)
+        messenger = MessengerImpl()
+        messenger.setOnMessageReceived { message -> onMessageReceived(message) }
+        messenger.setOnSystemMessageReceived { message -> onSystemMessageReceived(message) }
+        messenger.setOnMessageSent { message -> onMessageSent(message) }
+
+        user = User("Unknown", messenger, port)
+
         frame = JFrame("ReChat")
         setupFrame()
+        setupFontStyle()
 
         user.start()
+    }
+
+    fun show() {
+        frame.isVisible = true
+    }
+
+    /**
+     * Callbacks that display messages to GUI
+     */
+
+    private fun onMessageReceived(message: Message) {
+        EventQueue.invokeLater {
+            StyleConstants.setForeground(nameStyle, Color(30, 54, 191))
+
+            chatArea.styledDocument.let {
+                it.insertString(it.length, "%s\n".format(message.owner), nameStyle)
+                it.insertString(it.length, "%s\n".format(message.text), textStyle)
+            }
+        }
+    }
+
+    private fun onSystemMessageReceived(message: String) {
+        EventQueue.invokeLater {
+            chatArea.styledDocument.let {
+                it.insertString(it.length, "%s\n".format(message), infoStyle)
+            }
+        }
+    }
+
+    private fun onMessageSent(message: Message) {
+        EventQueue.invokeLater {
+            StyleConstants.setForeground(nameStyle, Color(30, 191, 43))
+
+            chatArea.styledDocument.let {
+                it.insertString(it.length, "%s\n".format(message.owner), nameStyle)
+                it.insertString(it.length, "%s\n".format(message.text), textStyle)
+            }
+        }
+    }
+
+    /**
+     * Methods to build GUI
+     */
+
+    private fun setupFontStyle() {
+        StyleConstants.setFontFamily(nameStyle, "Trebuchet MS")
+        StyleConstants.setBold(nameStyle, true)
+        StyleConstants.setFontSize(nameStyle, 12)
+
+        StyleConstants.setFontFamily(textStyle, "Trebuchet MS")
+        StyleConstants.setForeground(textStyle, Color.BLACK)
+        StyleConstants.setFontSize(textStyle, 12)
+
+        StyleConstants.setFontFamily(infoStyle, "Trebuchet MS")
+        StyleConstants.setItalic(infoStyle, true)
+        StyleConstants.setForeground(infoStyle, Color.DARK_GRAY)
+        StyleConstants.setFontSize(infoStyle, 11)
+        StyleConstants.setAlignment(infoStyle, StyleConstants.ALIGN_CENTER)
     }
 
     private fun buildToolbar(): JToolBar {
@@ -158,12 +233,4 @@ class ChatGUI {
             frame.add(it, BorderLayout.CENTER)
         }
     }
-
-    fun show() {
-        frame.isVisible = true
-    }
-}
-
-fun main(args: Array<String>) {
-    ChatGUI().show()
 }

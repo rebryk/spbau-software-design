@@ -1,9 +1,13 @@
-package ru.spbau.mit
+package ru.spbau.mit.net
 
+import org.apache.logging.log4j.LogManager
+import ru.spbau.mit.messenger.Messenger
 import java.net.ServerSocket
 import java.net.SocketTimeoutException
 
 class ServerImpl: Server {
+    private val logger = LogManager.getLogger("ServerImpl")
+
     private val messenger: Messenger
     private val socket: ServerSocket
 
@@ -11,8 +15,8 @@ class ServerImpl: Server {
     private @Volatile var client: ClientImpl? = null
     private @Volatile var isRunning: Boolean = false
 
-    private var onConnect: (() -> Unit)? = null
-    private var onDisconnect: (() -> Unit)? = null
+    private var onConnected: (() -> Unit)? = null
+    private var onDisconnected: (() -> Unit)? = null
 
     /**
      * This thread listens the socket for new connections
@@ -29,15 +33,16 @@ class ServerImpl: Server {
                         try {
                             socket.accept().let {
                                 client = ClientImpl(messenger, it)
-                                client?.setOnDisconnectCallback({
+                                client?.setOnDisconnected({
                                     client = null
-                                    onDisconnect?.invoke()
+                                    onDisconnected?.invoke()
                                 })
                                 client?.start()
-                                onConnect?.invoke()
+                                onConnected?.invoke()
                             }
                         } catch (e: SocketTimeoutException) {
                         } catch (e: Exception) {
+                            logger.debug("Listener stopped!")
                             return@run
                         }
                     }
@@ -60,7 +65,7 @@ class ServerImpl: Server {
         this.listener.start()
     }
 
-    fun getClient(): ClientImpl? {
+    override fun getClient(): ClientImpl? {
         return client
     }
 
@@ -83,15 +88,19 @@ class ServerImpl: Server {
                 socket.close()
             }
         } catch (e: Exception) {
-            System.err.println("Failed to stop server!")
+            logger.error("Failed to stop server!")
         }
     }
 
-    fun setOnConnectCallback(callback: () -> Unit) {
-        onConnect = callback
+    /**
+     * Methods to set callbacks
+     */
+
+    override fun setOnConnected(callback: () -> Unit) {
+        onConnected = callback
     }
 
-    fun setOnDisconnectCallback(callback: () -> Unit) {
-        onDisconnect = callback
+    override fun setOnDisconnected(callback: () -> Unit) {
+        onDisconnected = callback
     }
 }

@@ -1,5 +1,8 @@
-package ru.spbau.mit
+package ru.spbau.mit.net
 
+import org.apache.logging.log4j.LogManager
+import ru.spbau.mit.messenger.Message
+import ru.spbau.mit.messenger.Messenger
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.EOFException
@@ -7,12 +10,14 @@ import java.net.Socket
 import java.net.SocketAddress
 
 class ClientImpl: Client {
+    private val logger = LogManager.getLogger("ClientImpl")
+
     private var socket: Socket
     private val messenger: Messenger
 
-    private var onConnect: (() -> Unit)? = null
-    private var onConnectFailed: (() -> Unit)? = null
-    private var onDisconnect: (() -> Unit)? = null
+    private var onConnected: (() -> Unit)? = null
+    private var onConnectionFailed: (() -> Unit)? = null
+    private var onDisconnected: (() -> Unit)? = null
 
     constructor(messenger: Messenger, socket: Socket = Socket()) {
         this.messenger = messenger
@@ -28,7 +33,7 @@ class ClientImpl: Client {
                 messenger.sendMessage(DataOutputStream(socket.outputStream), message)
             }
         } catch (e: Exception) {
-            System.err.println("Failed to send message!")
+            logger.error("Failed to send message!")
         }
     }
 
@@ -39,9 +44,9 @@ class ClientImpl: Client {
         try {
            socket = Socket()
            socket.connect(address)
-           onConnect?.invoke()
+           onConnected?.invoke()
         } catch (e: Exception) {
-            System.err.println("Connection failed!")
+            logger.error("Connection failed!")
         }
     }
 
@@ -54,7 +59,7 @@ class ClientImpl: Client {
                 socket.close()
             }
         } catch (e: Exception) {
-            System.err.println("Disconnection failed!")
+            logger.error("Disconnection failed!")
         }
     }
 
@@ -68,25 +73,29 @@ class ClientImpl: Client {
                     messenger.receiveMessage(DataInputStream(this.socket.inputStream))
                 }
             } catch (e: EOFException) {
-                System.out.println("Disconnected.")
+                logger.debug("Disconnected.")
             } catch (e: Exception) {
-                System.err.println("Failed to receive message!")
+                logger.error("Failed to receive message!")
             } finally {
                 disconnect()
-                onDisconnect?.invoke()
+                onDisconnected?.invoke()
             }
         }).start()
     }
 
-    fun setOnConnectCallback(callback: () -> Unit) {
-        onConnect = callback
+    /**
+     *  Methods to set callbacks
+     */
+
+    override fun setOnConnected(callback: () -> Unit) {
+        onConnected = callback
     }
 
-    fun setOnDisconnectCallback(callback: () -> Unit) {
-        onDisconnect = callback
+    override fun setOnDisconnected(callback: () -> Unit) {
+        onDisconnected = callback
     }
 
-    fun setOnConnectFailedCallback(callback: () -> Unit) {
-        onConnectFailed = callback
+    override fun setOnConnectionFailed(callback: () -> Unit) {
+        onConnectionFailed = callback
     }
 }
