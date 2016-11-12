@@ -3,10 +3,6 @@ package ru.spbau.mit
 import ru.spbau.mit.commands.*
 
 /**
- * Created by rebryk on 9/7/16.
- */
-
-/**
  * Method creates shell and registers commands
  */
 fun main(args: Array<String>) {

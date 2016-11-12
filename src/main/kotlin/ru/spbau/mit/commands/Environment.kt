@@ -1,10 +1,6 @@
 package ru.spbau.mit.commands
 
 /**
- * Created by rebryk on 9/7/16.
- */
-
-/**
  * Command executes input string in the system shell
  */
 class Environment : Command {
@@ -18,6 +14,6 @@ class Environment : Command {
             println(String.format("Error: %s", e.toString()))
         }
 
-        return "";
+        return ""
     }
 }

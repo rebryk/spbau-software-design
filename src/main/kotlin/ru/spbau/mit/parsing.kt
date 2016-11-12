@@ -3,10 +3,6 @@ package ru.spbau.mit
 import java.util.*
 
 /**
- * Created by rebryk on 9/10/16.
- */
-
-/**
  * Method skip characters until current character != first character
  */
 fun skipString(string: String, start: Int): Int {
@@ -22,9 +18,25 @@ fun skipString(string: String, start: Int): Int {
  * Method makes substitution
  */
 fun substitute(input: String, variables: MutableMap<String, String>): String {
-    return input.split(' ')
-            .map { if (it.isNotEmpty() && it.first() == '$') variables.getOrElse(it, { "" }) else it }
-            .joinToString(" ")
+    var result = ""
+
+    var i = 0
+    while (i < input.length) {
+        if (input[i] == '$') {
+            var index = i + input.substring(i).indexOfFirst { it == ' ' }
+            if (index == i - 1) {
+                index = input.length
+            }
+
+            result += variables.getOrElse(input.substring(i, index), { "" })
+            i = index
+        } else {
+            result += input[i]
+            i += 1
+        }
+    }
+
+    return result
 }
 
 /**

@@ -5,10 +5,6 @@ import org.junit.Test
 import ru.spbau.mit.commands.*
 import kotlin.test.assertEquals
 
-/**
- * Created by rebryk on 9/21/16.
- */
-
 class Test {
     val shell = Shell()
 
@@ -17,6 +13,7 @@ class Test {
         shell.registerCommand("echo", Echo())
         shell.registerCommand("wc", Wc())
         shell.registerCommand("cat", Cat())
+        shell.registerCommand("pwd", Pwd())
     }
 
     @Test
@@ -28,5 +25,16 @@ class Test {
     fun testCat() {
         shell.execute("file = \'src/main/kotlin/ru/spbau/mit/main.kt\'")
         assertEquals(shell.execute("cat \$file | wc"), shell.execute("cat src/main/kotlin/ru/spbau/mit/main.kt | wc"))
+    }
+
+    @Test
+    fun testSubstitution() {
+        shell.execute("x = \'qwerty\'")
+        assertEquals("123qwerty", shell.execute("echo \"123\$x\""))
+    }
+
+    @Test
+    fun testPwd() {
+        assertEquals(System.getProperty("user.dir"), shell.execute("pwd"))
     }
 }

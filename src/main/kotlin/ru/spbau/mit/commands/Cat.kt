@@ -4,10 +4,6 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 /**
- * Created by rebryk on 9/10/16.
- */
-
-/**
  * Command prints content of input file
  */
 class Cat : Command {
