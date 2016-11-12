@@ -3,10 +3,6 @@ package ru.spbau.mit
 import ru.spbau.mit.commands.*
 
 /**
- * Created by rebryk on 9/7/16.
- */
-
-/**
  * Method creates shell and registers commands
  */
 fun main(args: Array<String>) {
@@ -15,7 +11,6 @@ fun main(args: Array<String>) {
     shell.registerCommand("pwd", Pwd())
     shell.registerCommand("wc", Wc())
     shell.registerCommand("cat", Cat())
-    shell.registerCommand("grep", Grep())
 
     do {
         val line = readLine()

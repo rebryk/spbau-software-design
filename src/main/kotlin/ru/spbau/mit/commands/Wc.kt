@@ -1,10 +1,6 @@
 package ru.spbau.mit.commands
 
 /**
- * Created by rebryk on 9/7/16.
- */
-
-/**
  * Command counts number of lines, words, characters in the given string
  */
 class Wc : Command {

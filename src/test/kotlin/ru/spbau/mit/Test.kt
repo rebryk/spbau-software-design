@@ -5,10 +5,6 @@ import org.junit.Test
 import ru.spbau.mit.commands.*
 import kotlin.test.assertEquals
 
-/**
- * Created by rebryk on 9/21/16.
- */
-
 class Test {
     val shell = Shell()
 
@@ -17,7 +13,7 @@ class Test {
         shell.registerCommand("echo", Echo())
         shell.registerCommand("wc", Wc())
         shell.registerCommand("cat", Cat())
-        shell.registerCommand("grep", Grep())
+        shell.registerCommand("pwd", Pwd())
     }
 
     @Test
@@ -32,7 +28,13 @@ class Test {
     }
 
     @Test
-    fun testGrep() {
-        assertEquals("1 1 34", shell.execute("grep modelVersion pom.xml | wc"))
+    fun testSubstitution() {
+        shell.execute("x = \'qwerty\'")
+        assertEquals("123qwerty", shell.execute("echo \"123\$x\""))
+    }
+
+    @Test
+    fun testPwd() {
+        assertEquals(System.getProperty("user.dir"), shell.execute("pwd"))
     }
 }

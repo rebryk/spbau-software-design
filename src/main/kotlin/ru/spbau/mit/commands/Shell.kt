@@ -4,10 +4,6 @@ import ru.spbau.mit.*
 import java.util.*
 
 /**
- * Created by rebryk on 9/10/16.
- */
-
-/**
  * Main command that executes terminal commands
  */
 class Shell : Command{
@@ -28,7 +24,7 @@ class Shell : Command{
         }
 
         if (commands[args[0]] == null) {
-            return environment.execute(args.joinToString(" "));
+            return environment.execute(args.joinToString(" "))
         }
 
         return commands[args[0]]!!.execute(args.subList(1, args.size).joinToString(" "))
