@@ -5,7 +5,7 @@ import ru.spbau.mit.painter.Painter
 
 class MedicineChest : Artifact() {
     init {
-        hp = 100.0
+        hp = 10.0
         disposable = true
     }
 

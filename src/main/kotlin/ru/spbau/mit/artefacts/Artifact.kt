@@ -14,10 +14,10 @@ abstract class Artifact : CreatureParameters(), Drawable {
      */
     fun activate(params: CreatureParameters) {
         if (!used) {
-            params.hp += hp
-            params.maxHp += maxHp
-            params.damage += damage
-            params.armor += armor
+            params.maxHp = Math.max(0.0, params.maxHp + maxHp)
+            params.hp = Math.max(0.0, Math.min(params.hp + hp, params.maxHp))
+            params.damage = Math.max(0.0, params.damage + damage)
+            params.armor = Math.max(0.0, params.armor + armor)
             params.hpGenerationSpeed += hpGenerationSpeed
         }
 
@@ -29,9 +29,9 @@ abstract class Artifact : CreatureParameters(), Drawable {
      * @param params parameters of the creature
      */
     fun deactivate(params: CreatureParameters) {
-        params.maxHp -= maxHp
-        params.damage -= damage
-        params.armor -= armor
+        params.maxHp = Math.max(0.0, params.maxHp - maxHp)
+        params.damage = Math.max(0.0, params.damage - damage)
+        params.armor = Math.max(0.0, params.armor - armor)
         params.hpGenerationSpeed -= hpGenerationSpeed
     }
 }
