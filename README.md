@@ -7,7 +7,7 @@
 `a` - go left <br>
 `d` - go right <br>
 `activate <i>` - activate the i-th artifact <br>
-`deactivate <i>` - activate the i-th artifact <br>
+`deactivate <i>` - deactivate the i-th artifact <br>
 
 ## Monsters
 * Goblin
