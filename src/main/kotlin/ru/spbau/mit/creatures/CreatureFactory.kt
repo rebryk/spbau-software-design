@@ -13,7 +13,7 @@ object CreatureFactory {
         PLAYER;
 
         companion object {
-            fun random(): Action = Action.values()[Random().nextInt(Action.values().size - 1)]
+            fun random(): CreatureType = CreatureType.values()[Random().nextInt(CreatureType.values().size - 1)]
         }
     }
 

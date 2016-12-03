@@ -13,7 +13,7 @@ object ArtifactFactory {
         MEDICINE_CHEST;
 
         companion object {
-            fun random(): Action = Action.values()[Random().nextInt(Action.values().size)]
+            fun random(): ArtifactType = ArtifactType.values()[Random().nextInt(ArtifactType.values().size)]
         }
     }
 
