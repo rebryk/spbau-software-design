@@ -1,6 +1,5 @@
 package ru.spbau.mit.creatures
 
-import ru.spbau.mit.strategies.Action
 import java.util.*
 
 /**
@@ -25,7 +24,7 @@ object CreatureFactory {
     fun create(type: CreatureType): Creature = when (type) {
         CreatureType.GOBLIN -> Goblin()
         CreatureType.SCAVENGER -> Scavenger()
-        CreatureType.PLAYER -> PlayerCreature()
+        CreatureType.PLAYER -> Player()
         else -> throw RuntimeException("Not found creature $type")
     }
 }

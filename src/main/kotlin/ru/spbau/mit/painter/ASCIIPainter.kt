@@ -5,7 +5,7 @@ import ru.spbau.mit.artefacts.Shield
 import ru.spbau.mit.artefacts.Sword
 import ru.spbau.mit.creatures.Goblin
 import ru.spbau.mit.creatures.Scavenger
-import ru.spbau.mit.creatures.PlayerCreature
+import ru.spbau.mit.creatures.Player
 import ru.spbau.mit.world.ArrayMap
 import ru.spbau.mit.world.World
 
@@ -31,7 +31,7 @@ class ASCIIPainter : Painter {
 
     override fun draw(creature: Goblin, params: DrawingParameters?) = draw('G', params)
 
-    override fun draw(creature: PlayerCreature, params: DrawingParameters?) {
+    override fun draw(creature: Player, params: DrawingParameters?) {
         draw('@', params)
 
         info = "HP: ${creature.hp}/${creature.maxHp}\tHP_GEN: ${creature.hpGenerationSpeed}\n"

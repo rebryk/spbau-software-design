@@ -25,7 +25,7 @@ abstract class Artifact : CreatureParameters(), Drawable {
     }
 
     /**
-     * Returns parameters of the creature to the initial state
+     * Returns parameters of the careature to the initial state
      * @param params parameters of the creature
      */
     fun deactivate(params: CreatureParameters) {

@@ -1,6 +1,5 @@
 package ru.spbau.mit.artefacts
 
-import ru.spbau.mit.strategies.Action
 import java.util.*
 
 /**

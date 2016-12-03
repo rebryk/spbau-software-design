@@ -1,7 +1,7 @@
 package ru.spbau.mit
 
 import ru.spbau.mit.creatures.Creature
-import ru.spbau.mit.creatures.PlayerCreature
+import ru.spbau.mit.creatures.Player
 import ru.spbau.mit.strategies.Action
 import ru.spbau.mit.world.World
 
@@ -102,6 +102,6 @@ object Model {
      * @return true if player is dead or there is no enemies, false otherwise
      */
     private fun isTheEndOfTheGame(world: World): Boolean {
-        return world.creatures.size == 1 || world.creatures.filter { it.value is PlayerCreature }.isEmpty()
+        return world.creatures.size == 1 || world.creatures.filter { it.value is Player }.isEmpty()
     }
 }

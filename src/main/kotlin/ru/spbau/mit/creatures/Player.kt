@@ -5,7 +5,7 @@ import ru.spbau.mit.painter.Painter
 import ru.spbau.mit.strategies.Strategy
 import ru.spbau.mit.strategies.PlayerStrategy
 
-class PlayerCreature : Creature() {
+class Player : Creature() {
     override val strategy: Strategy = PlayerStrategy()
 
     init {
