@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_package = "ru.spbau.mit";
+option java_outer_classname = "ServerProto";
+
+service Messenger {
+    rpc send (stream Message) returns (stream Message);
+}
+
+message TextMessage {
+    string nick = 1;
+    string text = 2;
+}
+
+message TypingStatus {
+    bool typing = 1;
+}
+
+message Message {
+    oneof body {
+        TextMessage textMessage = 1;
+        TypingStatus typingStatus = 2;
+    }
+}
