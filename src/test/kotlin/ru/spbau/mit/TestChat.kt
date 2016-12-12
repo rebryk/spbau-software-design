@@ -3,37 +3,39 @@ package ru.spbau.mit
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import ru.spbau.mit.messenger.Message
 import ru.spbau.mit.messenger.MessengerImpl
-import java.net.InetSocketAddress
 import kotlin.test.assertEquals
 
 class TestChat {
-    private val DELAY: Long = 200
+    private val DELAY: Long = 1000
 
     private val messenger1 = MessengerImpl()
     private val messages1 = mutableListOf<Message>()
     private val systemMessages1 = mutableListOf<String>()
-    private var user1: User? = null
+    private lateinit var user1: User
 
     private val messenger2 = MessengerImpl()
     private val messages2 = mutableListOf<Message>()
     private val systemMessages2 = mutableListOf<String>()
-    private var user2: User? = null
+    private lateinit var user2: User
 
     init {
         messenger1.setOnSystemMessageReceived { message ->
             systemMessages1.add(message)
         }
         messenger1.setOnMessageReceived { message ->
-            messages1.add(message)
+            if (message.bodyCase == Message.BodyCase.TEXTMESSAGE) {
+                messages1.add(message)
+            }
         }
 
         messenger2.setOnSystemMessageReceived { message ->
             systemMessages2.add(message)
         }
         messenger2.setOnMessageReceived { message ->
-            messages2.add(message)
+            if (message.bodyCase == Message.BodyCase.TEXTMESSAGE) {
+                messages2.add(message)
+            }
         }
     }
 
@@ -54,14 +56,14 @@ class TestChat {
 
     @Test
     fun testConnection() {
-        user1!!.start()
-        user2!!.start()
+        user1.start()
+        user2.start()
 
-        user1!!.connect(InetSocketAddress("127.0.0.1", 2002))
+        user1.connect("127.0.0.1", 2002)
         Thread.sleep(DELAY)
 
-        user1!!.stop()
-        user2!!.stop()
+        user1.stop()
+        user2.stop()
         Thread.sleep(DELAY)
 
         assertEquals(listOf("You connected!", "You disconnected!"), systemMessages1.toList())
@@ -70,18 +72,20 @@ class TestChat {
 
     @Test
     fun testReconnection() {
-        user1!!.start()
-        user2!!.start()
+        user1.start()
+        user2.start()
 
-        user1!!.connect(InetSocketAddress("127.0.0.1", 2002))
-        Thread.sleep(DELAY)
-        user1!!.disconnect()
-        Thread.sleep(DELAY)
-        user1!!.connect(InetSocketAddress("127.0.0.1", 2002))
+        user1.connect("127.0.0.1", 2002)
         Thread.sleep(DELAY)
 
-        user1!!.stop()
-        user2!!.stop()
+        user1.disconnect()
+        Thread.sleep(DELAY)
+
+        user1.connect("127.0.0.1", 2002)
+        Thread.sleep(DELAY)
+
+        user1.stop()
+        user2.stop()
         Thread.sleep(DELAY)
 
         assertEquals(listOf("You connected!", "You disconnected!", "You connected!", "You disconnected!"),
@@ -92,16 +96,18 @@ class TestChat {
 
     @Test
     fun testCrossReconnection() {
-        user1!!.start()
-        user2!!.start()
+        user1.start()
+        user2.start()
 
-        user1!!.connect(InetSocketAddress("127.0.0.1", 2002))
-        Thread.sleep(DELAY)
-        user2!!.connect(InetSocketAddress("127.0.0.1", 2001))
+        user1.connect("127.0.0.1", 2002)
         Thread.sleep(DELAY)
 
-        user1!!.stop()
-        user2!!.stop()
+        user2.connect("127.0.0.1", 2001)
+        Thread.sleep(DELAY)
+
+        user1.stop()
+        Thread.sleep(DELAY)
+        user2.stop()
         Thread.sleep(DELAY)
 
         assertEquals(listOf("You connected!", "You disconnected!", "User connected!", "User disconnected!"),
@@ -112,48 +118,48 @@ class TestChat {
 
     @Test
     fun testMessageSending() {
-        user1!!.start()
-        user2!!.start()
+        user1.start()
+        user2.start()
 
-        user1!!.connect(InetSocketAddress("127.0.0.1", 2002))
+        user1.connect("127.0.0.1", 2002)
         Thread.sleep(DELAY)
 
-        user1!!.sendMessage("Hi, User2!")
-        user2!!.sendMessage("Hi, User1!")
+        user1.sendMessage("Hi, User2!")
+        user2.sendMessage("Hi, User1!")
         Thread.sleep(DELAY)
 
-        user1!!.stop()
-        user2!!.stop()
+        user1.stop()
+        user2.stop()
         Thread.sleep(DELAY)
 
         assertEquals(listOf("You connected!", "You disconnected!"), systemMessages1.toList())
         assertEquals(listOf("User connected!", "User disconnected!"), systemMessages2.toList())
 
-        assertEquals(listOf(Message("User2", "Hi, User1!")), messages1.toList())
-        assertEquals(listOf(Message("User1", "Hi, User2!")), messages2.toList())
+        assertEquals(listOf(buildMessage("User2", "Hi, User1!")), messages1.toList())
+        assertEquals(listOf(buildMessage("User1", "Hi, User2!")), messages2.toList())
     }
 
     @Test
     fun testNameChanging() {
-        user1!!.start()
-        user2!!.start()
+        user1.start()
+        user2.start()
 
-        user1!!.connect(InetSocketAddress("127.0.0.1", 2002))
+        user1.connect("127.0.0.1", 2002)
         Thread.sleep(DELAY)
 
-        user1!!.sendMessage("Hi, User2!")
-        user2!!.sendMessage("Hi, User1!")
+        user1.sendMessage("Hi, User2!")
+        user2.sendMessage("Hi, User1!")
         Thread.sleep(DELAY)
 
-        user1!!.setName("NewUser1")
-        user2!!.setName("NewUser2")
+        user1.setName("NewUser1")
+        user2.setName("NewUser2")
 
-        user1!!.sendMessage("Hi, NewUser2!")
-        user2!!.sendMessage("Hi, NewUser1!")
+        user1.sendMessage("Hi, NewUser2!")
+        user2.sendMessage("Hi, NewUser1!")
         Thread.sleep(DELAY)
 
-        user1!!.stop()
-        user2!!.stop()
+        user1.stop()
+        user2.stop()
         Thread.sleep(DELAY)
 
         assertEquals(listOf("You connected!", "Your name has changed to NewUser1", "You disconnected!"),
@@ -161,7 +167,12 @@ class TestChat {
         assertEquals(listOf("User connected!", "Your name has changed to NewUser2", "User disconnected!"),
                 systemMessages2.toList())
 
-        assertEquals(listOf(Message("User2", "Hi, User1!"), Message("NewUser2", "Hi, NewUser1!")), messages1.toList())
-        assertEquals(listOf(Message("User1", "Hi, User2!"), Message("NewUser1", "Hi, NewUser2!")), messages2.toList())
+        assertEquals(listOf(buildMessage("User2", "Hi, User1!"), buildMessage("NewUser2", "Hi, NewUser1!")), messages1.toList())
+        assertEquals(listOf(buildMessage("User1", "Hi, User2!"), buildMessage("NewUser1", "Hi, NewUser2!")), messages2.toList())
+    }
+
+    fun buildMessage(owner: String, text: String): Message {
+        val textMessage = TextMessage.newBuilder().setOwner(owner).setText(text).build()
+        return Message.newBuilder().setTextMessage(textMessage).build()
     }
 }

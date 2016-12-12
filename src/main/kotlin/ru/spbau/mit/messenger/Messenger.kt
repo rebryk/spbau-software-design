@@ -1,12 +1,16 @@
 package ru.spbau.mit.messenger
 
-import java.io.DataInputStream
-import java.io.DataOutputStream
+import io.grpc.stub.StreamObserver
+import ru.spbau.mit.Message
 
 interface Messenger {
-    fun receiveMessage(inputStream: DataInputStream)
-    fun sendMessage(outputStream: DataOutputStream, message: Message)
+    fun receiveMessage(message: Message)
     fun sendSystemMessage(message: String)
+
+    fun sendMessage(owner: String, text: String)
+    fun sendTypingStatus(typing: Boolean)
+
+    fun setStream(stream: StreamObserver<Message>?)
 
     fun setOnMessageReceived(callback: (Message) -> Unit)
     fun setOnSystemMessageReceived(callback: (String) -> Unit)

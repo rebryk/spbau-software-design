@@ -1,15 +1,14 @@
 package ru.spbau.mit
 
-import ru.spbau.mit.messenger.Message
 import ru.spbau.mit.messenger.Messenger
 import ru.spbau.mit.messenger.MessengerImpl
+import sun.reflect.generics.reflectiveObjects.NotImplementedException
 import java.awt.*
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
+import java.awt.event.*
 import java.net.InetAddress
-import java.net.InetSocketAddress
 import java.net.UnknownHostException
 import javax.swing.*
+import javax.swing.border.BevelBorder
 import javax.swing.text.SimpleAttributeSet
 import javax.swing.text.StyleConstants
 
@@ -18,20 +17,24 @@ class ChatGUI {
     private val messenger: Messenger
 
     private val frame: JFrame
-    private val name        = JTextField(10)
-    private var serverIP    = JTextField(9)
-    private var messageText = JTextArea()
-    private var chatArea    = JTextPane()
+    private val name: JTextField = JTextField(10)
+    private var serverIP: JTextField = JTextField(9)
+    private var messageText: JTextArea = JTextArea()
+    private var chatArea: JTextPane = JTextPane()
 
-    private val nameStyle = SimpleAttributeSet()
-    private val textStyle = SimpleAttributeSet()
-    private val infoStyle = SimpleAttributeSet()
+    private val nameStyle: SimpleAttributeSet = SimpleAttributeSet()
+    private val textStyle: SimpleAttributeSet = SimpleAttributeSet()
+    private val infoStyle: SimpleAttributeSet = SimpleAttributeSet()
+
+    private var lastTimeKeyPressed: Long = 0
+    private var status: JLabel = JLabel()
+    private val timer: Timer
 
     constructor(port: Int = 0) {
         messenger = MessengerImpl()
-        messenger.setOnMessageReceived { message -> onMessageReceived(message) }
-        messenger.setOnSystemMessageReceived { message -> onSystemMessageReceived(message) }
-        messenger.setOnMessageSent { message -> onMessageSent(message) }
+        messenger.setOnMessageReceived { onMessageReceived(it) }
+        messenger.setOnSystemMessageReceived { onSystemMessageReceived(it) }
+        messenger.setOnMessageSent { onMessageSent(it) }
 
         user = User("Unknown", messenger, port)
 
@@ -39,6 +42,15 @@ class ChatGUI {
         setupFrame()
         setupFontStyle()
 
+        timer = Timer(100) {
+            if (System.currentTimeMillis() - lastTimeKeyPressed < 1000) {
+                messenger.sendTypingStatus(true)
+            } else {
+                messenger.sendTypingStatus(false)
+            }
+        }
+
+        timer.start()
         user.start()
     }
 
@@ -52,11 +64,23 @@ class ChatGUI {
 
     private fun onMessageReceived(message: Message) {
         EventQueue.invokeLater {
-            StyleConstants.setForeground(nameStyle, Color(30, 54, 191))
+            when (message.bodyCase) {
+                Message.BodyCase.TEXTMESSAGE -> {
+                    StyleConstants.setForeground(nameStyle, Color(30, 54, 191))
 
-            chatArea.styledDocument.let {
-                it.insertString(it.length, "%s\n".format(message.owner), nameStyle)
-                it.insertString(it.length, "%s\n".format(message.text), textStyle)
+                    chatArea.styledDocument.let {
+                        it.insertString(it.length, "${message.textMessage.owner}\n", nameStyle)
+                        it.insertString(it.length, "${message.textMessage.text}\n", textStyle)
+                    }
+                }
+                Message.BodyCase.TYPINGSTATUS -> {
+                    if (message.typingStatus.typing) {
+                        status.text = "User typing..."
+                    } else {
+                        status.text = ""
+                    }
+                }
+                else -> throw NotImplementedException()
             }
         }
     }
@@ -64,18 +88,25 @@ class ChatGUI {
     private fun onSystemMessageReceived(message: String) {
         EventQueue.invokeLater {
             chatArea.styledDocument.let {
-                it.insertString(it.length, "%s\n".format(message), infoStyle)
+                it.insertString(it.length, "$message\n", infoStyle)
             }
         }
     }
 
     private fun onMessageSent(message: Message) {
         EventQueue.invokeLater {
-            StyleConstants.setForeground(nameStyle, Color(30, 191, 43))
+            when (message.bodyCase) {
+                Message.BodyCase.TEXTMESSAGE -> {
+                    StyleConstants.setForeground(nameStyle, Color(30, 191, 43))
 
-            chatArea.styledDocument.let {
-                it.insertString(it.length, "%s\n".format(message.owner), nameStyle)
-                it.insertString(it.length, "%s\n".format(message.text), textStyle)
+                    chatArea.styledDocument.let {
+                        it.insertString(it.length, "${message.textMessage.owner}\n", nameStyle)
+                        it.insertString(it.length, "${message.textMessage.text}\n", textStyle)
+                    }
+                }
+                Message.BodyCase.TYPINGSTATUS -> { /* ignore */
+                }
+                else -> throw NotImplementedException()
             }
         }
     }
@@ -126,7 +157,7 @@ class ChatGUI {
                     serverIP.text.let {
                         val host = InetAddress.getByName(it.substring(0, it.lastIndexOf(":"))).hostName
                         val port = it.substring(it.lastIndexOf(":") + 1).toInt()
-                        user.connect(InetSocketAddress(host, port))
+                        user.connect(host, port)
                     }
                 } catch (e: UnknownHostException) {
                     JOptionPane.showMessageDialog(frame, "Incorrect server IP!")
@@ -188,6 +219,22 @@ class ChatGUI {
         }
     }
 
+    private fun buildStatusBar(): JPanel {
+        val panel = JPanel().let {
+            it.border = BevelBorder(BevelBorder.LOWERED)
+            it.preferredSize = Dimension(frame.width, 20)
+            it.layout = BoxLayout(it, BoxLayout.X_AXIS)
+            return@let it
+        }
+
+        status.let {
+            it.horizontalAlignment = SwingConstants.LEFT
+            panel.add(it)
+        }
+
+        return panel
+    }
+
     private fun buildMessageArea(): JPanel {
         val panel = JPanel().let {
             it.layout = BoxLayout(it, BoxLayout.X_AXIS)
@@ -195,7 +242,24 @@ class ChatGUI {
             return@let it
         }
 
-        panel.add(JScrollPane(messageText))
+        messageText.addKeyListener(object : KeyListener {
+            override fun keyPressed(e: KeyEvent?) {
+                lastTimeKeyPressed = System.currentTimeMillis()
+            }
+
+            override fun keyReleased(e: KeyEvent?) {
+                lastTimeKeyPressed = System.currentTimeMillis()
+            }
+
+            override fun keyTyped(e: KeyEvent?) {
+                lastTimeKeyPressed = System.currentTimeMillis()
+            }
+        })
+
+        JScrollPane(messageText).let {
+            panel.add(it)
+        }
+
 
         JButton("Send").let {
             it.margin = Insets(10, 10, 10, 10)
@@ -213,13 +277,14 @@ class ChatGUI {
         frame.let {
             it.addWindowListener(object : WindowAdapter() {
                 override fun windowClosing(e: WindowEvent?) {
+                    timer.stop()
                     user.stop()
                     super.windowClosing(e)
                 }
             })
 
             it.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-            it.setSize(350, 500)
+            it.setSize(360, 500)
             it.isResizable = false
             it.layout = BorderLayout()
         }
@@ -231,6 +296,7 @@ class ChatGUI {
             it.add(buildChatArea())
             it.add(buildMessageArea())
             frame.add(it, BorderLayout.CENTER)
+            frame.add(buildStatusBar(), BorderLayout.SOUTH)
         }
     }
 }

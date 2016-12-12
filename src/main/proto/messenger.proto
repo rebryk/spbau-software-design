@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+option java_multiple_files = true;
 option java_package = "ru.spbau.mit";
 option java_outer_classname = "ServerProto";
 
@@ -8,7 +9,7 @@ service Messenger {
 }
 
 message TextMessage {
-    string nick = 1;
+    string owner = 1;
     string text = 2;
 }
 

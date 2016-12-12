@@ -2,10 +2,8 @@ package ru.spbau.mit
 
 import org.apache.logging.log4j.LogManager
 import ru.spbau.mit.net.ClientImpl
-import ru.spbau.mit.messenger.Message
 import ru.spbau.mit.messenger.Messenger
 import ru.spbau.mit.net.ServerImpl
-import java.net.SocketAddress
 
 class User {
     private val logger = LogManager.getLogger("User")
@@ -18,54 +16,72 @@ class User {
 
     constructor(name: String, messenger: Messenger, port: Int = 0) {
         this.name = name
+
         this.messenger = messenger
 
-        this.server = ServerImpl(messenger, port)
+        this.server = ServerImpl(port)
         this.server.setOnConnected { onUserConnectCallback() }
-        this.server.setOnDisconnected { setUserDisconnectCallback()}
+        this.server.setOnDisconnected { setUserDisconnectCallback() }
+        this.server.setOnMessageReceived { messenger.receiveMessage(it) }
+        this.server.setOnStreamObserverUpdated { messenger.setStream(it) }
 
-        this.client = ClientImpl(messenger)
+        this.client = ClientImpl()
         this.client.setOnConnected { onConnectCallback() }
         this.client.setOnConnectionFailed { onConnectFailedCallback() }
         this.client.setOnDisconnected { onDisconnectCallback() }
+        this.client.setOnMessageReceived { messenger.receiveMessage(it) }
+        this.client.setOnStreamObserverUpdated { messenger.setStream(it) }
     }
 
+    /**
+     * Updates the current user's name
+     */
     fun setName(name: String) {
         this.name = name
-        messenger.sendSystemMessage("Your name has changed to %s".format(name))
-        logger.debug("User has changed name to %s".format(name))
+        messenger.sendSystemMessage("Your name has changed to $name")
+        logger.debug("User has changed name to $name")
     }
 
+    /**
+     * Sends text message through the network
+     * @param text message text
+     */
     fun sendMessage(text: String) {
-        val message = Message(name, text)
-        server.getClient()?.sendMessage(message) ?: client.sendMessage(message)
+        messenger.sendMessage(name, text)
     }
 
+    /**
+     * Starts the server
+     */
     fun start() {
         server.start()
     }
 
     /**
-     * Method closes all sockets and stops all threads.
-     * Call this method only once at the end.
+     * Shuts down the server, disconnects the client
+     * Call this method only once at the end
      */
     fun stop() {
-        server.stop()
         server.shutdown()
         client.disconnect()
     }
 
     /**
-     * Method stops the server and connects to the given address
+     * Stops the server and connects to the given address
+     * @param host server hostname
+     * @param port server port
      */
-    fun connect(address: SocketAddress) {
+    fun connect(host: String, port: Int) {
         server.stop()
-        client.connect(address)
-        client.start()
+        client.connect(host, port)
     }
 
+    /**
+     * Disconnects the client, starts the server
+     */
     fun disconnect() {
         client.disconnect()
+        server.start()
     }
 
     /**
@@ -83,6 +99,7 @@ class User {
     }
 
     private fun onConnectCallback() {
+        messenger.sendTypingStatus(false)
         messenger.sendSystemMessage("You connected!")
         logger.debug("You connected!")
     }

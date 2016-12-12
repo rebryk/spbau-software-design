@@ -1,86 +1,67 @@
 package ru.spbau.mit.net
 
+import io.grpc.ManagedChannel
+import io.grpc.ManagedChannelBuilder
+import io.grpc.stub.StreamObserver
 import org.apache.logging.log4j.LogManager
-import ru.spbau.mit.messenger.Message
-import ru.spbau.mit.messenger.Messenger
-import java.io.DataInputStream
-import java.io.DataOutputStream
-import java.io.EOFException
-import java.net.Socket
-import java.net.SocketAddress
+import ru.spbau.mit.Message
+import ru.spbau.mit.MessengerGrpc
+import java.util.concurrent.TimeUnit
 
-class ClientImpl: Client {
+class ClientImpl : ChatClient {
     private val logger = LogManager.getLogger("ClientImpl")
 
-    private var socket: Socket
-    private val messenger: Messenger
+    private var onConnected: () -> Unit = {}
+    private var onConnectionFailed: () -> Unit = {}
+    private var onDisconnected: () -> Unit = {}
+    private var onMessageReceived: (Message) -> Unit = {}
+    private var onStreamObserverUpdated: (StreamObserver<Message>) -> Unit = {}
 
-    private var onConnected: (() -> Unit)? = null
-    private var onConnectionFailed: (() -> Unit)? = null
-    private var onDisconnected: (() -> Unit)? = null
-
-    constructor(messenger: Messenger, socket: Socket = Socket()) {
-        this.messenger = messenger
-        this.socket = socket
-    }
+    private var channel: ManagedChannel? = null
 
     /**
-     * Method sends the given message to the socket
+     * Method creates new channel, connects to the given address and calls the callback
+     * @param host server hostname
+     * @param port server port
      */
-    override fun sendMessage(message: Message) {
+    override fun connect(host: String, port: Int) {
         try {
-            if (!socket.isClosed && socket.isConnected) {
-                messenger.sendMessage(DataOutputStream(socket.outputStream), message)
-            }
-        } catch (e: Exception) {
-            logger.error("Failed to send message!")
-        }
-    }
+            channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext(true).build()
+            val stub = MessengerGrpc.newStub(channel)
+            val stream = stub.send(object : StreamObserver<Message> {
+                override fun onNext(message: Message) {
+                    onMessageReceived.invoke(message)
+                }
 
-    /**
-     * Method creates new socket, connects to the given address and calls the callback
-     */
-    override fun connect(address: SocketAddress) {
-        try {
-           socket = Socket()
-           socket.connect(address)
-           onConnected?.invoke()
+                override fun onError(error: Throwable) {
+                    onDisconnected.invoke()
+                    logger.error(error)
+                }
+
+                override fun onCompleted() {
+                    onDisconnected.invoke()
+                    logger.debug("Received all messages.")
+                }
+            })
+
+            onStreamObserverUpdated.invoke(stream)
+            onConnected.invoke()
         } catch (e: Exception) {
+            onConnectionFailed.invoke()
             logger.error("Connection failed!")
         }
     }
 
     /**
-     * Method closes the socket if it's opened
+     * Shuts down the current channel
      */
     override fun disconnect() {
         try {
-            if (!socket.isClosed) {
-                socket.close()
-            }
+            channel?.shutdownNow()
+            channel?.awaitTermination(1, TimeUnit.SECONDS)
         } catch (e: Exception) {
             logger.error("Disconnection failed!")
         }
-    }
-
-    /**
-     * Method starts new thread which receives messages
-     */
-    override fun start() {
-        Thread({
-            try {
-                while (true) {
-                    messenger.receiveMessage(DataInputStream(this.socket.inputStream))
-                }
-            } catch (e: EOFException) {
-                logger.debug("Disconnected.")
-            } catch (e: Exception) {
-                logger.error("Failed to receive message!")
-            } finally {
-                disconnect()
-                onDisconnected?.invoke()
-            }
-        }).start()
     }
 
     /**
@@ -97,5 +78,13 @@ class ClientImpl: Client {
 
     override fun setOnConnectionFailed(callback: () -> Unit) {
         onConnectionFailed = callback
+    }
+
+    override fun setOnMessageReceived(callback: (Message) -> Unit) {
+        onMessageReceived = callback
+    }
+
+    override fun setOnStreamObserverUpdated(callback: (StreamObserver<Message>) -> Unit) {
+        onStreamObserverUpdated = callback
     }
 }

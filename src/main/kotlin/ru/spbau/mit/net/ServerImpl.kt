@@ -1,92 +1,95 @@
 package ru.spbau.mit.net
 
+import io.grpc.Server
+import io.grpc.ServerBuilder
+import io.grpc.stub.StreamObserver
 import org.apache.logging.log4j.LogManager
-import ru.spbau.mit.messenger.Messenger
-import java.net.ServerSocket
-import java.net.SocketTimeoutException
+import ru.spbau.mit.Message
+import ru.spbau.mit.MessengerGrpc
 
-class ServerImpl: Server {
+class ServerImpl : ChatServer, MessengerGrpc.MessengerImplBase {
     private val logger = LogManager.getLogger("ServerImpl")
 
-    private val messenger: Messenger
-    private val socket: ServerSocket
+    private val port: Int
+    private var server: Server
+    private var isRunning: Boolean = false
 
-    private @Volatile var listener: Thread
-    private @Volatile var client: ClientImpl? = null
-    private @Volatile var isRunning: Boolean = false
+    private var stream: StreamObserver<Message>? = null
 
-    private var onConnected: (() -> Unit)? = null
-    private var onDisconnected: (() -> Unit)? = null
+    private var onConnected: () -> Unit = {}
+    private var onDisconnected: () -> Unit = {}
+    private var onMessageReceived: (Message) -> Unit = {}
+    private var onStreamObserverUpdated: (StreamObserver<Message>) -> Unit = {}
 
     /**
-     * This thread listens the socket for new connections
+     * Implements gRPC method of communication
      */
-    private inner class Listener : Thread {
-        private val DELAY: Long = 100
-
-        constructor() { }
-
-        override fun run() {
-            while (!Thread.interrupted()) {
-                if (isRunning && client == null) {
-                    synchronized(this@ServerImpl) {
-                        try {
-                            socket.accept().let {
-                                client = ClientImpl(messenger, it)
-                                client?.setOnDisconnected({
-                                    client = null
-                                    onDisconnected?.invoke()
-                                })
-                                client?.start()
-                                onConnected?.invoke()
-                            }
-                        } catch (e: SocketTimeoutException) {
-                        } catch (e: Exception) {
-                            logger.debug("Listener stopped!")
-                            return@run
-                        }
-                    }
-
-                    try {
-                        Thread.sleep(DELAY)
-                    } catch (e: InterruptedException) {
-                        return
-                    }
+    override fun send(responseObserver: StreamObserver<Message>): StreamObserver<Message> {
+        return object : StreamObserver<Message> {
+            override fun onNext(message: Message) {
+                if (!isRunning || (stream != null && stream != responseObserver)) {
+                    responseObserver.onCompleted()
+                    return
                 }
+
+                if (stream == null) {
+                    stream = responseObserver
+                    onStreamObserverUpdated(responseObserver)
+                    onConnected.invoke()
+                }
+
+                onMessageReceived(message)
+            }
+
+            override fun onError(error: Throwable) {
+                stream = null
+                onDisconnected.invoke()
+                logger.error(error)
+            }
+
+            override fun onCompleted() {
+                stream = null
+                onDisconnected.invoke()
+                responseObserver.onCompleted()
+                logger.debug("Received all messages.")
             }
         }
     }
 
-    constructor(messenger: Messenger, port: Int) {
-        this.messenger = messenger
-        this.socket = ServerSocket(port)
-        this.socket.soTimeout = 100
-        this.listener = Listener()
-        this.listener.start()
+    constructor(port: Int) {
+        this.port = port
+        server = ServerBuilder.forPort(port).addService(this).build().start()
     }
 
-    override fun getClient(): ClientImpl? {
-        return client
+    /**
+     * Starts server
+     * Set isRunning flag to true
+     */
+    override fun start() {
+        isRunning = true
     }
 
-    override @Synchronized fun start() {
-        if (!socket.isClosed) {
-            isRunning = true
+    /**
+     * Stops server
+     * Set isRunning flag to false
+     * Calls onDisconnected callback
+     */
+    override fun stop() {
+        isRunning = false
+        stream?.let {
+            it.onCompleted()
+            onDisconnected.invoke()
         }
     }
 
-    override @Synchronized fun stop() {
-        isRunning = false
-        client?.disconnect()
-    }
-
+    /**
+     * Shuts down the server
+     */
     override fun shutdown() {
         try {
-            listener.interrupt()
-
-            if (!socket.isClosed) {
-                socket.close()
-            }
+            server.shutdown()
+            server.awaitTermination()
+            logger.debug("Server shut down")
         } catch (e: Exception) {
             logger.error("Failed to stop server!")
         }
@@ -102,5 +105,13 @@ class ServerImpl: Server {
 
     override fun setOnDisconnected(callback: () -> Unit) {
         onDisconnected = callback
+    }
+
+    override fun setOnMessageReceived(callback: (Message) -> Unit) {
+        onMessageReceived = callback
+    }
+
+    override fun setOnStreamObserverUpdated(callback: (StreamObserver<Message>) -> Unit) {
+        onStreamObserverUpdated = callback
     }
 }
