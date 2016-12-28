@@ -1,7 +1,7 @@
 package ru.spbau.mit.net
 
 /**
- * Class is responsible for:
+ * Server is responsible for:
  * - server initialization
  * - client acceptance
  */

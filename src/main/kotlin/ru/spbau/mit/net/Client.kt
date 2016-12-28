@@ -4,7 +4,7 @@ import ru.spbau.mit.messenger.Message
 import java.net.SocketAddress
 
 /**
- * Class is responsible for:
+ * Client is responsible for:
  * - connecting to the server
  * - messages sending
  */

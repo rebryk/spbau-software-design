@@ -4,7 +4,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 
 /**
- * Class is responsible for:
+ * Messenger is responsible for:
  * - writing messages to the output stream
  * - reading messages from the input stream
  * - system message sending (messages for user)
