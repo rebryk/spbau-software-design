@@ -1,5 +1,5 @@
 package ru.spbau.mit
 
 fun main(args: Array<String>) {
-    ChatGUI().show()
+    ChatGUI(port = args[0].toInt()).show()
 }

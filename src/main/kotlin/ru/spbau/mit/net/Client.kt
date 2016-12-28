@@ -3,6 +3,12 @@ package ru.spbau.mit.net
 import ru.spbau.mit.messenger.Message
 import java.net.SocketAddress
 
+/**
+ * Class is responsible for:
+ * - connecting to the server
+ * - messages sending
+ */
+
 interface Client {
     fun start()
     fun connect(address: SocketAddress)
