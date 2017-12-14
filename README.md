@@ -1,5 +1,5 @@
 # Roguelike
-###Kill the monsters! Steal the threasure!
+### Kill the monsters! Steal the threasure!
 
 ## Commands
 `w` - go up <br>
