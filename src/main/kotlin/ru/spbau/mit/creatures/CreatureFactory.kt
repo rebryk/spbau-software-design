@@ -25,6 +25,5 @@ object CreatureFactory {
         CreatureType.GOBLIN -> Goblin()
         CreatureType.SCAVENGER -> Scavenger()
         CreatureType.PLAYER -> Player()
-        else -> throw RuntimeException("Not found creature $type")
     }
 }

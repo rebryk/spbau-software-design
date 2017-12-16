@@ -81,11 +81,10 @@ object Model {
      * @param world description of the world
      */
     private fun giveArtifacts(world: World) {
-        world.creatures.forEach {
-            position, creature ->
+        world.creatures.forEach { (position, creature) ->
             world.artifacts
                     .getOrElse(position, { mutableListOf() })
-                    .removeIf { creature.addArtifact(it); true }
+                    .removeAll { creature.addArtifact(it); true }
         }
     }
 
